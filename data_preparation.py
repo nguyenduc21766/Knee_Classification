@@ -19,7 +19,7 @@ for grade in range(5):
             "KL": grade
         }, ignore_index=True)
 
-metadata.to_csv("metadata.csv", index=False)
+#metadata.to_csv("metadata.csv", index=False)
 
 
 
@@ -49,14 +49,22 @@ for df, name in zip([train, val, test], ["Train", "Validation", "Test"]):
 
 
 
+
 #  Stratified 5-Fold Cross-Validation
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+output_dir = "data/CSVs"
+os.makedirs(output_dir, exist_ok=True)  # create folder if not exist
 
 for fold, (train_idx, val_idx) in enumerate(skf.split(train_val, train_val['KL']), 1):
     train_fold = train_val.iloc[train_idx]
     val_fold = train_val.iloc[val_idx]
 
-    #  Plot KL distribution for training fold
+    # Save folds to CSV
+    train_fold.to_csv(os.path.join(output_dir, f"fold_{fold}_train.csv"), index=False)
+    val_fold.to_csv(os.path.join(output_dir, f"fold_{fold}_val.csv"), index=False)
+
+    # Plot KL distribution for training fold
     train_fold['KL'].value_counts().sort_index().plot(kind='bar')
     plt.title(f"KL Distribution - Train Fold {fold}")
     plt.xlabel("KL Grade")
@@ -71,11 +79,3 @@ for fold, (train_idx, val_idx) in enumerate(skf.split(train_val, train_val['KL']
     plt.ylabel("Count")
     plt.savefig(f"KL_distribution_val_fold{fold}.png")
     plt.close()
-
-# Step 5: Optional - Plot KL distribution for test set
-test['KL'].value_counts().sort_index().plot(kind='bar')
-plt.title("KL Distribution - Test Set")
-plt.xlabel("KL Grade")
-plt.ylabel("Count")
-plt.savefig("KL_distribution_test.png")
-plt.close()
